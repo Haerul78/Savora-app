@@ -1,47 +1,34 @@
 package com.savora.app
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.lifecycleScope
+import com.savora.app.remote.supabase
 import com.savora.app.ui.theme.SavoraTheme
+import io.github.jan.supabase.auth.auth
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            SavoraTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+
+        // Test koneksi Supabase
+        lifecycleScope.launch {
+            try {
+                val user = supabase.auth.currentUserOrNull()
+                Log.d("Supabase", "Connected! Current user: $user")
+            } catch (e: Exception) {
+                Log.e("Supabase", "Connection failed: ${e.message}")
             }
         }
-    }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SavoraTheme {
-        Greeting("Android")
+        setContent {
+            SavoraTheme {
+                Text("Savora — Supabase OK")
+            }
+        }
     }
 }
