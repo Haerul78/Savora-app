@@ -13,3 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+doc.md
+Database.sql
