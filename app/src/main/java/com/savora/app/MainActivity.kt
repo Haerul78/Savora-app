@@ -1,34 +1,41 @@
 package com.savora.app
 
+import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.Text
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.compose.rememberNavController
+import com.savora.app.navigation.AppNavigation
 import com.savora.app.remote.supabase
 import com.savora.app.ui.theme.SavoraTheme
-import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.handleDeeplinks
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Test koneksi Supabase
-        lifecycleScope.launch {
-            try {
-                val user = supabase.auth.currentUserOrNull()
-                Log.d("Supabase", "Connected! Current user: $user")
-            } catch (e: Exception) {
-                Log.e("Supabase", "Connection failed: ${e.message}")
-            }
+        WindowCompat.setDecorFitsSystemWindows(window, true)
+        window.statusBarColor = Color.BLACK
+        window.navigationBarColor = Color.BLACK
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
         }
-
+        lifecycleScope.launch { supabase.handleDeeplinks(intent) }
         setContent {
             SavoraTheme {
-                Text("Savora — Supabase OK")
+                val navController = rememberNavController()
+                AppNavigation(navController = navController)
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        lifecycleScope.launch { supabase.handleDeeplinks(intent) }
     }
 }
