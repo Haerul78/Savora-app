@@ -25,8 +25,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "SUPABASE_URL", "\"${localProps.getProperty("SUPABASE_URL")}\"")
-        buildConfigField("String", "SUPABASE_KEY", "\"${localProps.getProperty("SUPABASE_KEY")}\"")
+        buildConfigField("String", "MIDTRANS_SERVER_KEY", "\"${localProps.getProperty("SERVER_KEY")}\"")
+        buildConfigField("String", "MIDTRANS_CLIENT_KEY", "\"${localProps.getProperty("CLIENT_KEY")}\"")
+        buildConfigField("String", "SNAP_BASE_URL", "\"${localProps.getProperty("SNAP_BASE_URL")}\"")
     }
 
     buildTypes {
@@ -90,3 +91,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
+
+
