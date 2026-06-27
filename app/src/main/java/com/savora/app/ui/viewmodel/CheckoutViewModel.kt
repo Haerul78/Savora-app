@@ -132,10 +132,7 @@ class CheckoutViewModel : ViewModel() {
         }
     }
 
-    fun processPayment(
-        onSuccess: (orderId: String, paymentMethod: String, total: Long) -> Unit,
-        getOrNull: Unit.() -> Unit
-    ) {
+    fun processPayment(onSuccess: (orderId: String, paymentMethod: String, total: Long) -> Unit) {
         val method = _uiState.value.selectedPaymentMethod ?: return
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)

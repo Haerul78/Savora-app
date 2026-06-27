@@ -1,101 +1,255 @@
 package com.savora.app.navigation
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import java.net.URLDecoder
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import com.savora.app.ui.screen.auth.LoginScreen
+import com.savora.app.ui.screen.auth.RegisterScreen
+import com.savora.app.ui.screen.cart.CartScreen
+import com.savora.app.ui.screen.checkout.PaymentMethodScreen
+import com.savora.app.ui.screen.checkout.PaymentSuccessScreen
+import com.savora.app.ui.screen.home.HomeScreen
+import com.savora.app.ui.screen.profile.AddressScreen
+import com.savora.app.ui.screen.profile.PaymentDetailScreen
+import com.savora.app.ui.screen.profile.PaymentHistoryScreen
+import com.savora.app.ui.screen.profile.ProfileScreen
+import com.savora.app.ui.screen.profile.SavedRecipesScreen
+import com.savora.app.ui.screen.recipe.RecipesScreen
+import com.savora.app.ui.screen.recipe.RecipeDetailScreen
+import com.savora.app.ui.screen.splash.SplashScreen
+import com.savora.app.ui.screen.store.StoreScreen
 
 object Routes {
     const val SPLASH = "splash"
-    const val LOGIN = "login"
-    const val REGISTER = "register"
+    const val AUTH = "auth"
+    const val REGISTER = "auth/register"
     const val HOME = "home"
-    const val RECIPES = "recipes"
-    const val RECIPE_DETAIL = "recipe_detail/{recipeId}"
+    const val RECIPE_DETAIL = "recipe/{recipeId}"
     const val STORE = "store"
     const val CART = "cart"
-    const val PAYMENT_METHOD = "payment_method/{orderId}"
-    const val PAYMENT_SUCCESS = "payment_success/{paymentId}"
-    const val PROFILE = "profile"
-    const val ADDRESS = "address"
-    const val SAVED_RECIPES = "saved_recipes"
-    const val PAYMENT_HISTORY = "payment_history"
-    const val PAYMENT_DETAIL = "payment_detail/{paymentId}"
+    const val PAYMENT_METHOD = "checkout/payment"
+    const val PAYMENT_SUCCESS = "checkout/success/{orderId}/{paymentMethod}/{total}"
 
-    fun recipeDetail(recipeId: String) = "recipe_detail/$recipeId"
-    fun paymentMethod(orderId: String) = "payment_method/$orderId"
-    fun paymentSuccess(paymentId: String) = "payment_success/$paymentId"
-    fun paymentDetail(paymentId: String) = "payment_detail/$paymentId"
+    fun paymentSuccess(orderId: String, paymentMethod: String, total: Long): String {
+        val encodedMethod = URLEncoder.encode(paymentMethod, StandardCharsets.UTF_8.toString())
+        return "checkout/success/$orderId/$encodedMethod/$total"
+    }
+    const val RECIPES = "recipes"
+    const val PROFILE = "profile"
+    const val PAYMENT_HISTORY = "profile/payment-history"
+    const val PAYMENT_DETAIL = "profile/payment/{paymentId}"
+    const val SAVED_RECIPES = "profile/saved-recipes"
+    const val ADDRESSES = "profile/addresses"
+
+    fun paymentDetail(paymentId: String) = "profile/payment/$paymentId"
+
+    fun recipeDetail(recipeId: String) = "recipe/$recipeId"
 }
 
 @Composable
-fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifier) {
-    NavHost(navController = navController, startDestination = Routes.SPLASH, modifier = modifier) {
-
+fun AppNavigation(navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = Routes.SPLASH
+    ) {
+        // Splash Screen
         composable(Routes.SPLASH) {
-            Text("TODO: SplashScreen") // diganti Commit 14
+            SplashScreen(
+                onNavigateToHome = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.SPLASH) { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.navigate(Routes.AUTH) {
+                        popUpTo(Routes.SPLASH) { inclusive = true }
+                    }
+                }
+            )
         }
-        composable(Routes.LOGIN) {
-            Text("TODO: LoginScreen") // diganti Commit 15
+
+        // Login / Register
+        composable(Routes.AUTH) {
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.AUTH) { inclusive = true }
+                    }
+                },
+                onNavigateToRegister = {
+                    navController.navigate(Routes.REGISTER)
+                }
+            )
         }
+
+        // Daftar Akun
         composable(Routes.REGISTER) {
-            Text("TODO: RegisterScreen") // diganti Commit 16
+            RegisterScreen(
+                onRegisterSuccess = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.AUTH) { inclusive = true }
+                    }
+                },
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
+
+        // Home
         composable(Routes.HOME) {
-            Text("TODO: HomeScreen") // diganti Commit 21
+            HomeScreen(
+                onRecipeClick = { recipeId ->
+                    navController.navigate(Routes.recipeDetail(recipeId))
+                },
+                onCartClick = { navController.navigate(Routes.CART) },
+                onNavigateToStore = { navController.navigate(Routes.STORE) },
+                onNavigateToRecipes = { navController.navigate(Routes.RECIPES) },
+                navController = navController
+            )
         }
-        composable(Routes.RECIPES) {
-            Text("TODO: RecipesScreen") // diganti Commit 22
-        }
+
+        // Recipe Detail
         composable(
             route = Routes.RECIPE_DETAIL,
             arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
-        ) { backStack ->
-            val recipeId = backStack.arguments?.getString("recipeId") ?: return@composable
-            Text("TODO: RecipeDetailScreen recipeId=$recipeId") // diganti Commit 23
+        ) { backStackEntry ->
+            val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
+            RecipeDetailScreen(
+                recipeId = recipeId,
+                onNavigateBack = { navController.popBackStack() },
+                onBuyIngredients = { navController.navigate(Routes.CART) }
+            )
         }
+
+        // Recipes list
+        composable(Routes.RECIPES) {
+            RecipesScreen(
+                onRecipeClick = { recipeId ->
+                    navController.navigate(Routes.recipeDetail(recipeId))
+                },
+                navController = navController
+            )
+        }
+
+        // Toko / Store
         composable(Routes.STORE) {
-            Text("TODO: StoreScreen") // diganti Commit 29
+            StoreScreen(
+                onCartClick = { navController.navigate(Routes.CART) },
+                navController = navController
+            )
         }
+
+        // Cart
         composable(Routes.CART) {
-            Text("TODO: CartScreen") // diganti Commit 30
+            CartScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onCheckout = { navController.navigate(Routes.PAYMENT_METHOD) }
+            )
         }
-        composable(
-            route = Routes.PAYMENT_METHOD,
-            arguments = listOf(navArgument("orderId") { type = NavType.StringType })
-        ) { backStack ->
-            val orderId = backStack.arguments?.getString("orderId") ?: return@composable
-            Text("TODO: PaymentMethodScreen orderId=$orderId") // diganti Commit 36
+
+        // Payment Method
+        composable(Routes.PAYMENT_METHOD) {
+            PaymentMethodScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onPaymentSuccess = { orderId, paymentMethod, total ->
+                    navController.navigate(Routes.paymentSuccess(orderId, paymentMethod, total)) {
+                        popUpTo(Routes.HOME)
+                    }
+                }
+            )
         }
+
+        // Payment Success
         composable(
             route = Routes.PAYMENT_SUCCESS,
-            arguments = listOf(navArgument("paymentId") { type = NavType.StringType })
-        ) { backStack ->
-            val paymentId = backStack.arguments?.getString("paymentId") ?: return@composable
-            Text("TODO: PaymentSuccessScreen paymentId=$paymentId") // diganti Commit 37
+            arguments = listOf(
+                navArgument("orderId") { type = NavType.StringType },
+                navArgument("paymentMethod") { type = NavType.StringType },
+                navArgument("total") { type = NavType.LongType },
+            )
+        ) { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
+            val paymentMethod = URLDecoder.decode(
+                backStackEntry.arguments?.getString("paymentMethod") ?: "",
+                StandardCharsets.UTF_8.toString()
+            )
+            val total = backStackEntry.arguments?.getLong("total") ?: 0L
+            PaymentSuccessScreen(
+                orderId = orderId,
+                paymentMethod = paymentMethod,
+                total = total,
+                onNavigateHome = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.HOME) { inclusive = true }
+                    }
+                }
+            )
         }
+
+        // Profile
         composable(Routes.PROFILE) {
-            Text("TODO: ProfileScreen") // diganti Commit 41
+            ProfileScreen(
+                onNavigateToPaymentHistory = {
+                    navController.navigate(Routes.PAYMENT_HISTORY)
+                },
+                onNavigateToSavedRecipes = {
+                    navController.navigate(Routes.SAVED_RECIPES)
+                },
+                onNavigateToAddresses = {
+                    navController.navigate(Routes.ADDRESSES)
+                },
+                onLogout = {
+                    navController.navigate(Routes.AUTH) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                navController = navController
+            )
         }
-        composable(Routes.ADDRESS) {
-            Text("TODO: AddressScreen") // diganti Commit 42
+
+        // Addresses
+        composable(Routes.ADDRESSES) {
+            AddressScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
-        composable(Routes.SAVED_RECIPES) {
-            Text("TODO: SavedRecipesScreen") // diganti Commit 24
-        }
+
+        // Payment History
         composable(Routes.PAYMENT_HISTORY) {
-            Text("TODO: PaymentHistoryScreen") // diganti Commit 43
+            PaymentHistoryScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onPaymentClick = { paymentId ->
+                    navController.navigate(Routes.paymentDetail(paymentId))
+                },
+            )
         }
+
+        // Payment Detail (kwitansi)
         composable(
             route = Routes.PAYMENT_DETAIL,
-            arguments = listOf(navArgument("paymentId") { type = NavType.StringType })
-        ) { backStack ->
-            val paymentId = backStack.arguments?.getString("paymentId") ?: return@composable
-            Text("TODO: PaymentDetailScreen paymentId=$paymentId") // diganti Commit 43
+            arguments = listOf(navArgument("paymentId") { type = NavType.StringType }),
+        ) { backStackEntry ->
+            val paymentId = backStackEntry.arguments?.getString("paymentId") ?: ""
+            PaymentDetailScreen(
+                paymentId = paymentId,
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
+        // Saved Recipes
+        composable(Routes.SAVED_RECIPES) {
+            SavedRecipesScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onRecipeClick = { recipeId ->
+                    navController.navigate(Routes.recipeDetail(recipeId))
+                }
+            )
         }
     }
 }
