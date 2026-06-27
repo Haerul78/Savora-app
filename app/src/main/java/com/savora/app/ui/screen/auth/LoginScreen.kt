@@ -23,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,7 +36,6 @@ fun LoginScreen(
     onNavigateToRegister: () -> Unit = {},
     authViewModel: AuthViewModel = viewModel()
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -46,7 +44,6 @@ fun LoginScreen(
 
     val uiState by authViewModel.uiState.collectAsState()
 
-    // Navigate to Home setelah Google OAuth callback berhasil
     LaunchedEffect(uiState.isLoggedIn) {
         if (uiState.isLoggedIn) onLoginSuccess()
     }
@@ -57,7 +54,7 @@ fun LoginScreen(
             .background(SavoraSurface)
             .verticalScroll(rememberScrollState())
     ) {
-        // ── Hero Section (60% tinggi layar) ─────────────────────
+        // ── Hero Section ─────────────────────────────────────────
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -65,7 +62,6 @@ fun LoginScreen(
                 .heightIn(min = 280.dp)
                 .background(SavoraPrimary)
         ) {
-            // Gradient overlay
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -78,8 +74,6 @@ fun LoginScreen(
                         )
                     )
             )
-
-            // Logo & Tagline
             Column(
                 modifier = Modifier
                     .align(Alignment.Center)
@@ -111,7 +105,7 @@ fun LoginScreen(
             }
         }
 
-        // ── Bottom Sheet Card ───────────────────────────────────
+        // ── Card ─────────────────────────────────────────────────
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -123,258 +117,214 @@ fun LoginScreen(
             Column(
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 28.dp)
             ) {
-                // ── Tabs: Masuk | Daftar ─────────────────────────
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    listOf("Masuk", "Daftar").forEachIndexed { index, label ->
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable { selectedTab = index },
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
-                                color = if (selectedTab == index) SavoraPrimary else SavoraOnSurfaceVariant,
-                                modifier = Modifier.padding(bottom = 12.dp)
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(3.dp)
-                                    .background(
-                                        if (selectedTab == index) SavoraPrimary
-                                        else Color.Transparent,
-                                        RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)
-                                    )
+                Text(
+                    text = "Masuk",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = SavoraOnSurface,
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
+
+                // Email
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = {
+                        email = it
+                        emailError = null
+                    },
+                    label = { Text("Email") },
+                    placeholder = { Text("Masukkan email kamu") },
+                    leadingIcon = {
+                        Icon(Icons.Filled.Email, contentDescription = null, tint = SavoraOnSurfaceVariant)
+                    },
+                    isError = emailError != null,
+                    supportingText = emailError?.let { { Text(it, color = SavoraTertiary) } },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = SavoraPrimary,
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedContainerColor = SavoraSurfaceContainerHigh,
+                        unfocusedContainerColor = SavoraSurfaceContainerHigh,
+                        cursorColor = SavoraPrimary
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Kata Sandi
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = {
+                        password = it
+                        passwordError = null
+                    },
+                    label = { Text("Kata Sandi") },
+                    placeholder = { Text("Masukkan kata sandi") },
+                    leadingIcon = {
+                        Icon(Icons.Filled.Lock, contentDescription = null, tint = SavoraOnSurfaceVariant)
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                contentDescription = if (passwordVisible) "Sembunyikan" else "Tampilkan",
+                                tint = SavoraOnSurfaceVariant
                             )
                         }
-                    }
+                    },
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    isError = passwordError != null,
+                    supportingText = passwordError?.let { { Text(it, color = SavoraTertiary) } },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = SavoraPrimary,
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedContainerColor = SavoraSurfaceContainerHigh,
+                        unfocusedContainerColor = SavoraSurfaceContainerHigh,
+                        cursorColor = SavoraPrimary
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Lupa Kata Sandi
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Lupa kata sandi?",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = SavoraPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .padding(top = 8.dp)
+                            .clickable { }
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                if (selectedTab == 0) {
-                    // ── Tab Masuk ──────────────────────────────────
-                    // Email
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = {
-                            email = it
-                            emailError = null
-                        },
-                        label = { Text("Email") },
-                        placeholder = { Text("Masukkan email kamu") },
-                        leadingIcon = {
-                            Icon(Icons.Filled.Email, contentDescription = null, tint = SavoraOnSurfaceVariant)
-                        },
-                        isError = emailError != null,
-                        supportingText = emailError?.let { { Text(it, color = SavoraTertiary) } },
-                        shape = RoundedCornerShape(16.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = SavoraPrimary,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedContainerColor = SavoraSurfaceContainerHigh,
-                            unfocusedContainerColor = SavoraSurfaceContainerHigh,
-                            cursorColor = SavoraPrimary
-                        ),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Password
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = {
-                            password = it
-                            passwordError = null
-                        },
-                        label = { Text("Kata Sandi") },
-                        placeholder = { Text("Masukkan kata sandi") },
-                        leadingIcon = {
-                            Icon(Icons.Filled.Lock, contentDescription = null, tint = SavoraOnSurfaceVariant)
-                        },
-                        trailingIcon = {
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(
-                                    imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                                    contentDescription = if (passwordVisible) "Sembunyikan" else "Tampilkan",
-                                    tint = SavoraOnSurfaceVariant
-                                )
-                            }
-                        },
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        isError = passwordError != null,
-                        supportingText = passwordError?.let { { Text(it, color = SavoraTertiary) } },
-                        shape = RoundedCornerShape(16.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = SavoraPrimary,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedContainerColor = SavoraSurfaceContainerHigh,
-                            unfocusedContainerColor = SavoraSurfaceContainerHigh,
-                            cursorColor = SavoraPrimary
-                        ),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    // Lupa Kata Sandi
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "Lupa kata sandi?",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = SavoraPrimary,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .padding(top = 8.dp)
-                                .clickable { }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Error message
-                    if (uiState.error != null) {
-                        Text(
-                            text = uiState.error!!,
-                            color = SavoraTertiary,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                    }
-
-                    // Tombol Masuk
-                    Button(
-                        onClick = {
-                            emailError = if (email.isBlank() || !email.contains("@")) "Email tidak valid" else null
-                            passwordError = if (password.length < 8) "Minimal 8 karakter" else null
-                            if (emailError == null && passwordError == null) {
-                                authViewModel.signIn(email, password, onLoginSuccess)
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                        contentPadding = PaddingValues(),
-                        enabled = !uiState.isLoading
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(SavoraPrimary, SavoraPrimaryContainer)
-                                    ),
-                                    shape = RoundedCornerShape(24.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (uiState.isLoading) {
-                                CircularProgressIndicator(
-                                    color = Color.White,
-                                    modifier = Modifier.size(24.dp),
-                                    strokeWidth = 2.dp
-                                )
-                            } else {
-                                Text(
-                                    text = "Masuk",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color.White
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Divider
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        HorizontalDivider(modifier = Modifier.weight(1f), color = SavoraOutlineVariant.copy(alpha = 0.3f))
-                        Text(
-                            text = "  Atau masuk dengan  ",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = SavoraOnSurfaceVariant
-                        )
-                        HorizontalDivider(modifier = Modifier.weight(1f), color = SavoraOutlineVariant.copy(alpha = 0.3f))
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Google button
-                    OutlinedButton(
-                        onClick = { authViewModel.signInWithGoogle() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = SavoraSurfaceContainerLowest
-                        ),
-                        border = null
-                    ) {
-                        Text(
-                            text = "G",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF4285F4)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "Google",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = SavoraOnSurface
-                        )
-                    }
-                } else {
-                    // ── Tab Daftar ─────────────────────────────────
+                // Error message
+                if (uiState.error != null) {
                     Text(
-                        text = "Buat akun baru dan mulai jelajahi resep lezat Nusantara!",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = SavoraOnSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp)
+                        text = uiState.error!!,
+                        color = SavoraTertiary,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
+                }
 
-                    Button(
-                        onClick = onNavigateToRegister,
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                        contentPadding = PaddingValues()
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(SavoraPrimary, SavoraPrimaryContainer)
-                                    ),
-                                    shape = RoundedCornerShape(24.dp)
+                // Tombol Masuk
+                Button(
+                    onClick = {
+                        emailError = if (email.isBlank() || !email.contains("@")) "Email tidak valid" else null
+                        passwordError = if (password.length < 8) "Minimal 8 karakter" else null
+                        if (emailError == null && passwordError == null) {
+                            authViewModel.signIn(email, password, onLoginSuccess)
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    contentPadding = PaddingValues(),
+                    enabled = !uiState.isLoading
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(SavoraPrimary, SavoraPrimaryContainer)
                                 ),
-                            contentAlignment = Alignment.Center
-                        ) {
+                                shape = RoundedCornerShape(24.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
                             Text(
-                                text = "Daftar Gratis",
+                                text = "Masuk",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color.White
                             )
                         }
                     }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Link Daftar
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Belum punya akun? ",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = SavoraOnSurfaceVariant
+                    )
+                    Text(
+                        text = "Daftar",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold,
+                        color = SavoraPrimary,
+                        modifier = Modifier.clickable { onNavigateToRegister() }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Divider
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = SavoraOutlineVariant.copy(alpha = 0.3f))
+                    Text(
+                        text = "  Atau masuk dengan  ",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = SavoraOnSurfaceVariant
+                    )
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = SavoraOutlineVariant.copy(alpha = 0.3f))
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Google button
+                OutlinedButton(
+                    onClick = { authViewModel.signInWithGoogle() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = SavoraSurfaceContainerLowest
+                    ),
+                    border = null
+                ) {
+                    Text(
+                        text = "G",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF4285F4)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Google",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = SavoraOnSurface
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))

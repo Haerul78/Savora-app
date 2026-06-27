@@ -114,10 +114,16 @@ class AuthViewModel : ViewModel() {
                     onSuccess()
                 },
                 onFailure = { e ->
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = e.message ?: "Registrasi gagal"
-                    )
+                    val msg = when {
+                        e.message?.contains("user_already_exists", ignoreCase = true) == true ->
+                            "Email sudah terdaftar. Silakan gunakan email lain."
+                        e.message?.contains("invalid_email", ignoreCase = true) == true ->
+                            "Format email tidak valid."
+                        e.message?.contains("weak_password", ignoreCase = true) == true ->
+                            "Kata sandi terlalu lemah."
+                        else -> "Registrasi gagal. Silakan coba lagi."
+                    }
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = msg)
                 }
             )
         }

@@ -42,9 +42,17 @@ fun RegisterScreen(
     var agreedToTerms by remember { mutableStateOf(false) }
 
     val uiState by authViewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState.isLoggedIn) {
         if (uiState.isLoggedIn) onRegisterSuccess()
+    }
+
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            snackbarHostState.showSnackbar(it)
+            authViewModel.clearError()
+        }
     }
 
     // Password strength
@@ -73,11 +81,25 @@ fun RegisterScreen(
             phone.isNotBlank() && password.length >= 8 &&
             password == confirmPassword && agreedToTerms
 
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = SavoraTertiary,
+                    contentColor = Color.White,
+                    shape = RoundedCornerShape(12.dp)
+                )
+            }
+        },
+        containerColor = SavoraSurface
+    ) { innerPadding ->
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(SavoraSurface)
             .verticalScroll(rememberScrollState())
+            .padding(innerPadding)
             .padding(24.dp)
     ) {
         Spacer(modifier = Modifier.height(48.dp))
@@ -121,7 +143,7 @@ fun RegisterScreen(
                 cursorColor = SavoraPrimary
             ),
             singleLine = true,
-            modifier = Modifier.fillMaxWidth().height(56.dp)
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -142,7 +164,7 @@ fun RegisterScreen(
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true,
-            modifier = Modifier.fillMaxWidth().height(56.dp)
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -163,7 +185,7 @@ fun RegisterScreen(
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
             singleLine = true,
-            modifier = Modifier.fillMaxWidth().height(56.dp)
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -193,7 +215,7 @@ fun RegisterScreen(
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             singleLine = true,
-            modifier = Modifier.fillMaxWidth().height(56.dp)
+            modifier = Modifier.fillMaxWidth()
         )
 
         // Password strength indicator
@@ -222,7 +244,7 @@ fun RegisterScreen(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
             label = { Text("Konfirmasi Kata Sandi") },
-            leadingIcon = { Icon(Icons.Filled.LockClock, null, tint = SavoraOnSurfaceVariant) },
+            leadingIcon = { Icon(Icons.Filled.Lock, null, tint = SavoraOnSurfaceVariant) },
             trailingIcon = {
                 IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                     Icon(
@@ -246,7 +268,7 @@ fun RegisterScreen(
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             singleLine = true,
-            modifier = Modifier.fillMaxWidth().height(56.dp)
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -269,16 +291,6 @@ fun RegisterScreen(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-
-        // Error
-        if (uiState.error != null) {
-            Text(
-                text = uiState.error!!,
-                color = SavoraTertiary,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-        }
 
         // Tombol Daftar
         Button(
@@ -352,4 +364,5 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
     }
+    } // end Scaffold
 }
