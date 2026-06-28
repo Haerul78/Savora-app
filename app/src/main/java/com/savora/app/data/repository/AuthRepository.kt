@@ -71,4 +71,22 @@ class AuthRepository {
     suspend fun isLoggedIn(): Boolean {
         return try { supabase.auth.currentSessionOrNull() != null } catch (e: Exception) { false }
     }
+
+    suspend fun changePassword(newPassword: String): Result<Unit> {
+        return try {
+            supabase.auth.updateUser { password = newPassword }
+            Result.success(Unit)
+        } catch (e: Exception) { Result.failure(e) }
+    }
+
+    suspend fun deleteAccount(): Result<Unit> {
+        return try {
+            val userId = supabase.auth.currentUserOrNull()?.id
+            if (userId != null) {
+                runCatching { supabase.from("users").delete { filter { eq("id", userId) } } }
+            }
+            supabase.auth.signOut()
+            Result.success(Unit)
+        } catch (e: Exception) { Result.failure(e) }
+    }
 }

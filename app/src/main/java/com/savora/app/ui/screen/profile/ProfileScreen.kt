@@ -28,6 +28,7 @@ fun ProfileScreen(
     onNavigateToPaymentHistory: () -> Unit = {},
     onNavigateToSavedRecipes: () -> Unit = {},
     onNavigateToAddresses: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     onLogout: () -> Unit = {},
     navController: NavController,
     viewModel: ProfileViewModel = viewModel()
@@ -91,7 +92,7 @@ fun ProfileScreen(
                     ProfileMenuItem(Icons.Filled.ReceiptLong, "Riwayat Pesanan", onClick = onNavigateToPaymentHistory)
                     ProfileMenuItem(Icons.Filled.Bookmark, "Resep Tersimpan", onClick = onNavigateToSavedRecipes)
                     ProfileMenuItem(Icons.Filled.LocationOn, "Alamat Saya", onClick = onNavigateToAddresses)
-                    ProfileMenuItem(Icons.Filled.Settings, "Pengaturan", onClick = { })
+                    ProfileMenuItem(Icons.Filled.Settings, "Pengaturan", onClick = onNavigateToSettings)
                 }
             }
 

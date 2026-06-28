@@ -21,6 +21,7 @@ import com.savora.app.ui.screen.profile.PaymentDetailScreen
 import com.savora.app.ui.screen.profile.PaymentHistoryScreen
 import com.savora.app.ui.screen.profile.ProfileScreen
 import com.savora.app.ui.screen.profile.SavedRecipesScreen
+import com.savora.app.ui.screen.profile.SettingsScreen
 import com.savora.app.ui.screen.recipe.RecipesScreen
 import com.savora.app.ui.screen.recipe.RecipeDetailScreen
 import com.savora.app.ui.screen.splash.SplashScreen
@@ -47,6 +48,7 @@ object Routes {
     const val PAYMENT_DETAIL = "profile/payment/{paymentId}"
     const val SAVED_RECIPES = "profile/saved-recipes"
     const val ADDRESSES = "profile/addresses"
+    const val SETTINGS = "profile/settings"
 
     fun paymentDetail(paymentId: String) = "profile/payment/$paymentId"
 
@@ -204,6 +206,9 @@ fun AppNavigation(navController: NavHostController) {
                 onNavigateToAddresses = {
                     navController.navigate(Routes.ADDRESSES)
                 },
+                onNavigateToSettings = {
+                    navController.navigate(Routes.SETTINGS)
+                },
                 onLogout = {
                     navController.navigate(Routes.AUTH) {
                         popUpTo(0) { inclusive = true }
@@ -248,6 +253,18 @@ fun AppNavigation(navController: NavHostController) {
                 onNavigateBack = { navController.popBackStack() },
                 onRecipeClick = { recipeId ->
                     navController.navigate(Routes.recipeDetail(recipeId))
+                }
+            )
+        }
+
+        // Settings
+        composable(Routes.SETTINGS) {
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onAccountDeleted = {
+                    navController.navigate(Routes.AUTH) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }

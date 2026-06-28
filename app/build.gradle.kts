@@ -8,6 +8,7 @@ plugins {
 
 android {
     namespace = "com.savora.app"
+    base.archivesName.set("savora")
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -49,6 +50,7 @@ android {
         buildConfig = true
         compose = true
     }
+
 }
 
 dependencies {
